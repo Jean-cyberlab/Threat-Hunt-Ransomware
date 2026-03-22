@@ -1,5 +1,4 @@
-# SHA256 File Hashes — Akira Ransomware / Ashford Sterling
-# Do NOT upload to VirusTotal or public sandboxes without authorisation
+# SHA256 File Hashes — Akira Ransomware 
 
 # Ransomware binary (disguised as updater.exe)
 e609d070ee9f76934d73353be4ef7ff34b3ecc3a2d1e5d052140ed4cb9e4752b  updater.exe
