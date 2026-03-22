@@ -2,7 +2,7 @@
 
 ## Incident Overview
 
-On 27 January 2026, Ashford Sterling Recruitment — a small recruitment firm with 45 employees — suffered a ransomware attack carried out by the **Akira ransomware group**. The attack was a continuation of a prior compromise ("The Broker") in which an initial access broker had pre-staged persistent access via AnyDesk remote access software.
+A ransomware attack was carried out by the **Akira ransomware group**. The attack was a continuation of a prior compromise, in which an initial access broker had pre-staged persistent access via AnyDesk remote access software.
 
 The threat actor returned using this pre-staged access, deployed tooling from a custom C2 infrastructure, disabled security controls, harvested credentials, moved laterally to the file server, exfiltrated sensitive data, and deployed Akira ransomware — all within approximately **3 hours**.
 
