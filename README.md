@@ -127,4 +127,4 @@ A ransomware affiliate re-entered the environment using **pre-staged AnyDesk** a
 
 ---
 
-> ⚠️ **Disclaimer:** This investigation was conducted in a controlled lab environment as part of a cybersecurity training challenge on Sanclogic. All organisation names, users, and infrastructure are fictional.
+> ⚠️ **Disclaimer:** This investigation was conducted in a controlled lab environment as part of a cybersecurity training challenge.
