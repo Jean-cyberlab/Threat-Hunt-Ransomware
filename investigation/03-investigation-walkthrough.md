@@ -1,9 +1,7 @@
 # 🔍 Investigation Walkthrough — Akira Ransomware
 
-**Organisation:** Ashford Sterling Recruitment
 **Incident Date:** 27 January 2026
 **Tool:** Microsoft Defender for Endpoint — Advanced Hunting (KQL)
-**Investigator:** Self-directed threat hunt
 
 > All timestamps are in **UTC**. This walkthrough documents my investigative process — what evidence I found, what it revealed about the attacker's behaviour, and how I uncovered it.
 
@@ -11,7 +9,7 @@
 
 ## 1. Where I Started — Working Backwards From Impact
 
-The investigation began at the point of impact. The file server `as-srv` had been encrypted with the `.akira` extension appended to every file, and ransom notes named `akira_readme.txt` had been dropped across multiple directories inside `C:\Shares`. This told me immediately who was responsible — the Akira ransomware group — and gave me a clear timestamp anchor to work backwards from.
+My investigation began at the point of impact. The file server `as-srv` had been encrypted with the `.akira` extension appended to every file, and ransom notes named `akira_readme.txt` had been dropped across multiple directories inside `C:\Shares`. This told me immediately who was responsible — the Akira ransomware group — and gave me a clear timestamp to work backwards from.
 
 The ransom note contained a TOR address for victim negotiations and a unique victim ID. When I attempted to verify the TOR address, I ran into a common problem — the font used in the note made several characters visually ambiguous, with lowercase `l` characters easily mistaken for the number `1`. I cross-referenced the address against [ransomware.live](https://www.ransomware.live), a public threat intelligence resource that tracks ransomware group infrastructure, to confirm the correct address. Three positions in the address had been misread — `akira[l]2`, `ayp3[l]6`, and `ko[ll]pj` were all lowercase L, not the number one.
 
