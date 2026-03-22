@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-This repository documents a complete threat hunt investigation into an **Akira ransomware** attack against a fictional recruitment firm — Ashford Sterling Recruitment. The challenge was hosted on [Sanclogic](https://www.sanclogic.com) and rated **Advanced** difficulty.
+This repository documents a complete threat hunt investigation into an **Akira ransomware** attack.
 
 The investigation required working **backwards from ransomware impact**, tracking attacker activity across multiple hosts, correlating pre-staged infrastructure from a prior compromise, and answering 40 investigative flags using **Microsoft Defender for Endpoint (MDE)** and **KQL**.
 
