@@ -1,4 +1,4 @@
-# Malicious Domains — Akira Ransomware / Ashford Sterling
+# Malicious Domains — Akira Ransomware
 # Do NOT browse to these domains directly
 
 # C2 Infrastructure
