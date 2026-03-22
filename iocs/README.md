@@ -1,6 +1,6 @@
 # 🔴 Indicators of Compromise (IOCs)
 
-All IOCs identified during the Akira ransomware investigation of Ashford Sterling Recruitment.
+All IOCs identified during the Akira ransomware investigation.
 
 > ⚠️ **Warning:** Do not browse to any domains or IPs listed here. Do not upload hashes to public sandboxes without authorisation.
 
