@@ -3,7 +3,6 @@
 ![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
 ![Flags](https://img.shields.io/badge/Flags-40%2F40-brightgreen)
 ![Difficulty](https://img.shields.io/badge/Difficulty-Advanced-red)
-![Platform](https://img.shields.io/badge/Platform-Sanclogic-blue)
 ![Tool](https://img.shields.io/badge/Tool-Microsoft%20Defender%20for%20Endpoint-0078D4)
 
 ---
