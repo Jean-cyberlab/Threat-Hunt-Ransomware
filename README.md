@@ -20,9 +20,8 @@ The investigation required working **backwards from ransomware impact**, trackin
 
 | Field | Detail |
 |---|---|
-| **Challenge** | The Akira — Ashford Sterling Recruitment |
+| **Challenge** | The Akira Ransomeware |
 | **Difficulty** | Advanced |
-| **Platform** | Sanclogic |
 | **Tool** | Microsoft Defender for Endpoint |
 | **Query Language** | KQL (Kusto Query Language) |
 | **Flags Completed** | 40 / 40 |
@@ -59,7 +58,7 @@ The investigation required working **backwards from ransomware impact**, trackin
 
 ## ⚡ Attack Summary
 
-A ransomware affiliate re-entered the environment using **pre-staged AnyDesk** access from a prior compromise, downloaded tools via PowerShell from a custom C2 domain, dumped credentials from LSASS, moved laterally to the file server, and deployed Akira ransomware — all within approximately **3 hours**.
+A ransomware affiliate re-entered the environment using **pre-staged AnyDesk** access from a prior compromise, downloaded tools via PowerShell from a custom C2 domain, dumped credentials from LSASS, moved laterally to the file server, and deployed a ransomware — all within approximately **3 hours**.
 
 ```
 [AnyDesk Pre-Staged] → [Tools Downloaded] → [Defender Disabled]
