@@ -1,4 +1,4 @@
-# 🔍 Threat Hunt: Akira Ransomware — Ashford Sterling Recruitment
+# 🔍 Threat Hunt: Akira Ransomware 
 
 ![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
 ![Flags](https://img.shields.io/badge/Flags-40%2F40-brightgreen)
