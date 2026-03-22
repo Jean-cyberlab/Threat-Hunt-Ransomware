@@ -1,0 +1,13 @@
+# Malicious Domains — Akira Ransomware / Ashford Sterling
+# Do NOT browse to these domains directly
+
+# C2 Infrastructure
+sync.cloud-endpoint.net
+cdn.cloud-endpoint.net
+cloud-endpoint.net
+
+# AnyDesk Relay
+relay-0b975d23.net.anydesk.com
+
+# Akira TOR Infrastructure (requires TOR browser)
+akiral2iz6a7qgd3ayp3l6yub7xx2uep76idk3u2kollpj5z3z636bad.onion

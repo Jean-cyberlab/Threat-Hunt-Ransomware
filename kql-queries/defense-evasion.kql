@@ -1,0 +1,121 @@
+// ============================================================
+// DEFENSE EVASION QUERIES
+// Akira Ransomware — Ashford Sterling Investigation
+// ============================================================
+
+// ----------------------------------------------------------
+// 1. Detect Windows Defender registry tampering
+// ----------------------------------------------------------
+DeviceRegistryEvents
+| where RegistryKey has "Windows Defender"
+| where ActionType == "RegistryValueSet"
+| project Timestamp, DeviceName, AccountName, RegistryKey,
+          RegistryValueName, RegistryValueData, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 2. Detect DisableAntiSpyware specifically
+// ----------------------------------------------------------
+DeviceRegistryEvents
+| where RegistryKey has "Windows Defender"
+| where RegistryValueName == "DisableAntiSpyware"
+| project Timestamp, DeviceName, AccountName, RegistryKey,
+          RegistryValueName, RegistryValueData
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 3. Detect Set-MpPreference disabling commands
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has "Set-MpPreference"
+| where ProcessCommandLine has_any ("Disable", "disable", "$true")
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine,
+          InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 4. Detect Windows Firewall being disabled
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has "advfirewall"
+| where ProcessCommandLine has "off"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 5. Detect shadow copy deletion (all methods)
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("vssadmin", "shadowcopy", "wbadmin")
+| where ProcessCommandLine has_any ("delete", "off", "No")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 6. Detect bcdedit recovery disabling
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "bcdedit.exe"
+| where ProcessCommandLine has "recoveryenabled"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 7. Detect security services being stopped via net.exe
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "net.exe"
+| where ProcessCommandLine has "stop"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 8. Detect kill.bat script execution
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has "kill.bat"
+| project Timestamp, DeviceName, AccountName, FileName,
+          ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 9. Find all script files (.bat, .ps1) created on a host
+// ----------------------------------------------------------
+DeviceFileEvents
+| where DeviceName in ("as-pc2", "as-srv")
+| where Timestamp between (datetime(2026-01-27T19:00:00) .. datetime(2026-01-27T23:00:00))
+| where FileName endswith_any (".bat", ".ps1", ".cmd", ".vbs")
+| project Timestamp, DeviceName, FileName, FolderPath, SHA256, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 10. Detect PowerShell commands disabling security (via DeviceEvents)
+// ----------------------------------------------------------
+DeviceEvents
+| where ActionType == "PowerShellCommand"
+| extend Command = parse_json(AdditionalFields).Command
+| where Command has_any ("DisableRealtimeMonitoring", "DisableAntiSpyware",
+    "DisableBehaviorMonitoring", "DisableIOAVProtection")
+| project Timestamp, DeviceName, AccountName, Command
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 11. Detect indicator removal — file deletion after attack
+// ----------------------------------------------------------
+DeviceFileEvents
+| where ActionType == "FileDeleted"
+| where FileName endswith ".exe"
+| where FolderPath has_any ("ProgramData", "Users\\Public")
+| project Timestamp, DeviceName, AccountName, FileName, FolderPath,
+          InitiatingProcessFileName, InitiatingProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 12. Detect PowerShell history deletion (anti-forensics)
+// ----------------------------------------------------------
+DeviceFileEvents
+| where ActionType == "FileDeleted"
+| where FileName has "ConsoleHost_history"
+| project Timestamp, DeviceName, AccountName, FileName, FolderPath,
+          InitiatingProcessFileName, InitiatingProcessCommandLine
+| sort by Timestamp asc

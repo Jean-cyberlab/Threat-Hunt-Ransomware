@@ -1,0 +1,114 @@
+// ============================================================
+// RANSOMWARE DETECTION QUERIES
+// Akira Ransomware — Ashford Sterling Investigation
+// ============================================================
+
+// ----------------------------------------------------------
+// 1. Find ransom notes dropped on any host
+// ----------------------------------------------------------
+DeviceFileEvents
+| where FileName has_any ("akira_readme", "readme_akira", "AKIRA_README")
+| project Timestamp, DeviceName, FolderPath, FileName, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 2. Detect mass file renaming (encryption in progress)
+// ----------------------------------------------------------
+DeviceFileEvents
+| where ActionType == "FileRenamed"
+| where FileName endswith ".akira"
+     or PreviousFileName endswith ".akira"
+| summarize EncryptedFiles = count() by DeviceName, bin(Timestamp, 1m)
+| where EncryptedFiles > 10
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 3. Identify ransomware binary by suspicious location and timing
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where DeviceName == "as-srv"
+| where Timestamp between (datetime(2026-01-27T22:00:00) .. datetime(2026-01-27T22:30:00))
+| where FolderPath has "ProgramData"
+| project Timestamp, DeviceName, AccountName, FileName, FolderPath, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 4. Find ransomware by hash (updater.exe)
+// ----------------------------------------------------------
+DeviceFileEvents
+| where SHA256 == "e609d070ee9f76934d73353be4ef7ff34b3ecc3a2d1e5d052140ed4cb9e4752b"
+| project Timestamp, DeviceName, FileName, FolderPath, SHA256
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 5. Hunt for all known malicious hashes across all devices
+// ----------------------------------------------------------
+DeviceFileEvents
+| where SHA256 in (
+    "e609d070ee9f76934d73353be4ef7ff34b3ecc3a2d1e5d052140ed4cb9e4752b", // updater.exe (ransomware)
+    "66b876c52946f4aed47dd696d790972ff265b6f4451dab54245bc4ef1206d90b", // wsync.exe v1
+    "0072ca0d0adc9a1b2e1625db4409f57fc32b5a09c414786bf08c4d8e6a073654", // wsync.exe v2
+    "0e7da57d92eaa6bda9d0bbc24b5f0827250aa42f295fd056ded50c6e3c3fb96c", // kill.bat
+    "26d5748ffe6bd95e3fee6ce184d388a1a681006dc23a0f08d53c083c593c193b", // scan.exe
+    "512a1f4ed9f512572608c729a2b89f44ea66a40433073aedcd914bd2d33b7015"  // st.exe
+)
+| project Timestamp, DeviceName, FileName, FolderPath, SHA256
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 6. Detect data staging/compression for exfiltration
+// ----------------------------------------------------------
+DeviceFileEvents
+| where FileName endswith_any (".zip", ".rar", ".7z")
+| where FolderPath has_any ("ProgramData", "Users\\Public", "Temp")
+| where InitiatingProcessFileName != "explorer.exe"
+| project Timestamp, DeviceName, FileName, FolderPath, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 7. Find cleanup script execution post-encryption
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has "clean.bat"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine,
+          InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 8. Detect all files deleted after encryption (anti-forensics)
+// ----------------------------------------------------------
+DeviceFileEvents
+| where DeviceName == "as-srv"
+| where ActionType == "FileDeleted"
+| where Timestamp between (datetime(2026-01-27T22:18:00) .. datetime(2026-01-27T23:00:00))
+| project Timestamp, DeviceName, FileName, FolderPath,
+          InitiatingProcessFileName, InitiatingProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 9. Identify all hosts with .akira encrypted files
+// ----------------------------------------------------------
+DeviceFileEvents
+| where FileName endswith ".akira"
+| summarize count() by DeviceName
+| sort by count_ desc
+
+// ----------------------------------------------------------
+// 10. Find encryption start time (first ransom note dropped)
+// ----------------------------------------------------------
+DeviceFileEvents
+| where FileName == "akira_readme.txt"
+| summarize FirstSeen = min(Timestamp) by DeviceName
+| sort by FirstSeen asc
+
+// ----------------------------------------------------------
+// 11. Determine full scope of encrypted files
+// ----------------------------------------------------------
+DeviceFileEvents
+| where ActionType == "FileRenamed"
+| where FileName endswith ".akira"
+| summarize EncryptedFiles = count(), 
+            FirstFile = min(Timestamp),
+            LastFile = max(Timestamp)
+    by DeviceName
+| sort by EncryptedFiles desc

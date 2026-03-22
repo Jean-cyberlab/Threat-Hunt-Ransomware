@@ -1,0 +1,8 @@
+# Malicious IP Addresses — Akira Ransomware / Ashford Sterling
+
+# Attacker IP (AnyDesk direct connection port 7070)
+88.97.164.155
+
+# C2 IPs (Cloudflare CDN — cloud-endpoint.net)
+104.21.30.237
+172.67.174.46

@@ -1,0 +1,32 @@
+type,value,description,confidence,flag
+domain,sync.cloud-endpoint.net,Payload hosting domain (wsync.exe and scan.exe),High,Q5
+domain,cdn.cloud-endpoint.net,Ransomware staging domain (updater.exe),High,Q6
+domain,cloud-endpoint.net,Root C2 domain — block entire domain,High,Q5/Q6
+domain,relay-0b975d23.net.anydesk.com,AnyDesk relay infrastructure,High,Q8
+onion,akiral2iz6a7qgd3ayp3l6yub7xx2uep76idk3u2kollpj5z3z636bad.onion,Akira negotiation portal,High,Q2
+ip,88.97.164.155,Attacker real IP (AnyDesk port 7070),High,Q17
+ip,104.21.30.237,C2 IP behind Cloudflare CDN,High,Q7
+ip,172.67.174.46,C2 IP behind Cloudflare CDN,High,Q7
+hash_sha256,e609d070ee9f76934d73353be4ef7ff34b3ecc3a2d1e5d052140ed4cb9e4752b,updater.exe — Akira ransomware binary,High,Q34
+hash_sha256,66b876c52946f4aed47dd696d790972ff265b6f4451dab54245bc4ef1206d90b,wsync.exe v1 — C2 beacon,High,Q21
+hash_sha256,0072ca0d0adc9a1b2e1625db4409f57fc32b5a09c414786bf08c4d8e6a073654,wsync.exe v2 — C2 beacon (rotated),High,Q22
+hash_sha256,0e7da57d92eaa6bda9d0bbc24b5f0827250aa42f295fd056ded50c6e3c3fb96c,kill.bat — defense evasion script,High,Q10
+hash_sha256,26d5748ffe6bd95e3fee6ce184d388a1a681006dc23a0f08d53c083c593c193b,scan.exe — AdvancedIpScanner renamed,High,Q24
+hash_sha256,512a1f4ed9f512572608c729a2b89f44ea66a40433073aedcd914bd2d33b7015,st.exe — data staging tool,High,Q31
+filename,wsync.exe,C2 beacon deployed to C:\ProgramData\,High,Q19
+filename,scan.exe,AdvancedIpScanner renamed for evasion,High,Q23
+filename,updater.exe,Akira ransomware binary in C:\ProgramData\,High,Q33
+filename,kill.bat,Defense evasion script in C:\ProgramData\,High,Q9
+filename,clean.bat,Cleanup/anti-forensics script,High,Q39
+filename,st.exe,Data staging and compression tool,High,Q30
+filename,exfil_data.zip,Exfiltrated data archive,High,Q32
+filename,akira_readme.txt,Akira ransom note,High,Q1
+path,C:\Users\Public,AnyDesk staging location,High,Q16
+path,C:\ProgramData,Primary attacker staging directory,High,Q20
+registry,HKLM\SOFTWARE\Policies\Microsoft\Windows Defender,DisableAntiSpyware=1 — Defender disabled,High,Q11
+pipe,\Device\NamedPipe\lsass,Named pipe used for LSASS credential dumping,High,Q14
+account,david.mitchell,Compromised user account on as-pc2,High,Q18
+account,as.srv.administrator,Lateral movement account used on as-srv,High,Q27
+host,as-pc2,Initial foothold workstation,High,Q40
+host,as-srv,File server — primary ransomware target,High,Q40
+victim_id,813R-QWJM-XKIJ,Akira victim unique identifier,High,Q3

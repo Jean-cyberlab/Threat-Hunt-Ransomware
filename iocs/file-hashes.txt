@@ -1,0 +1,20 @@
+# SHA256 File Hashes — Akira Ransomware / Ashford Sterling
+# Do NOT upload to VirusTotal or public sandboxes without authorisation
+
+# Ransomware binary (disguised as updater.exe)
+e609d070ee9f76934d73353be4ef7ff34b3ecc3a2d1e5d052140ed4cb9e4752b  updater.exe
+
+# C2 Beacon version 1
+66b876c52946f4aed47dd696d790972ff265b6f4451dab54245bc4ef1206d90b  wsync.exe
+
+# C2 Beacon version 2 (rotated after first was blocked)
+0072ca0d0adc9a1b2e1625db4409f57fc32b5a09c414786bf08c4d8e6a073654  wsync.exe
+
+# Evasion script (disables Windows Defender)
+0e7da57d92eaa6bda9d0bbc24b5f0827250aa42f295fd056ded50c6e3c3fb96c  kill.bat
+
+# Network scanner (AdvancedIpScanner renamed)
+26d5748ffe6bd95e3fee6ce184d388a1a681006dc23a0f08d53c083c593c193b  scan.exe
+
+# Data staging tool
+512a1f4ed9f512572608c729a2b89f44ea66a40433073aedcd914bd2d33b7015  st.exe

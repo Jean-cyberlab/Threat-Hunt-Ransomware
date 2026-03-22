@@ -1,0 +1,101 @@
+// ============================================================
+// NETWORK HUNTING QUERIES
+// Akira Ransomware — Ashford Sterling Investigation
+// ============================================================
+
+// ----------------------------------------------------------
+// 1. Find outbound connections by PowerShell (tool downloads)
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where DeviceName == "as-pc2"
+| where Timestamp between (datetime(2026-01-27T19:00:00) .. datetime(2026-01-27T21:00:00))
+| where InitiatingProcessFileName == "powershell.exe"
+| where ActionType == "ConnectionSuccess"
+| where RemoteUrl != ""
+| where not(RemoteUrl has_any (".microsoft.com", ".windows.com", ".windowsupdate.com"))
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP, RemotePort, InitiatingProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 2. Identify C2 domain connections across all hosts
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where RemoteUrl has "cloud-endpoint.net"
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP, RemotePort, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 3. Find all IPs associated with a suspicious domain
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where RemoteUrl has "cloud-endpoint.net"
+| summarize count() by RemoteIP, RemoteUrl
+| sort by count_ desc
+
+// ----------------------------------------------------------
+// 4. Hunt for AnyDesk connections (including relay and direct)
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where RemoteUrl has "anydesk"
+| project Timestamp, DeviceName, RemoteUrl, RemoteIP, RemotePort, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 5. Find attacker's real IP via AnyDesk direct connection
+//    AnyDesk port 7070 = direct connection (no relay = real IP exposed)
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where InitiatingProcessFileName =~ "anydesk.exe"
+| where RemotePort == 7070
+| project Timestamp, DeviceName, RemoteIP, RemotePort
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 6. Detect inbound connections from public IPs
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where DeviceName in ("as-pc2", "as-srv")
+| where ActionType == "InboundConnectionAccepted"
+| where RemoteIPType == "Public"
+| project Timestamp, DeviceName, RemoteIP, RemotePort, LocalPort, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 7. SMB connections to internal hosts (lateral movement / share enumeration)
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where RemotePort == 445
+| where InitiatingProcessFileName in ("wsync.exe", "powershell.exe", "cmd.exe", "net.exe")
+| summarize count() by RemoteIP, InitiatingProcessFileName
+| sort by count_ desc
+
+// ----------------------------------------------------------
+// 8. Detect bitsadmin tool downloads (LOLBIN abuse)
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "bitsadmin.exe"
+| where ProcessCommandLine has "transfer"
+| where ProcessCommandLine has "http"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 9. Detect Invoke-WebRequest downloads (PowerShell fallback)
+// ----------------------------------------------------------
+DeviceEvents
+| where ActionType == "PowerShellCommand"
+| where AdditionalFields has_any ("Invoke-WebRequest", "IWR", "DownloadFile", "WebClient")
+| extend Command = parse_json(AdditionalFields).Command
+| project Timestamp, DeviceName, AccountName, Command
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 10. Full network activity summary for a host in time window
+// ----------------------------------------------------------
+DeviceNetworkEvents
+| where DeviceName == "as-pc2"
+| where Timestamp between (datetime(2026-01-27T19:00:00) .. datetime(2026-01-27T22:30:00))
+| where RemoteIPType == "Public"
+| where ActionType == "ConnectionSuccess"
+| summarize count() by RemoteUrl, RemoteIP, InitiatingProcessFileName
+| sort by count_ desc

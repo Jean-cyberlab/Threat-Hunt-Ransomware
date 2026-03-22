@@ -1,0 +1,102 @@
+// ============================================================
+// PROCESS HUNTING QUERIES
+// Akira Ransomware — Ashford Sterling Investigation
+// ============================================================
+
+// ----------------------------------------------------------
+// 1. Find AnyDesk running from non-standard paths
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName =~ "anydesk.exe"
+| where not(FolderPath has_any ("Program Files", "AppData\\Local\\AnyDesk"))
+| project Timestamp, DeviceName, AccountName, FolderPath, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 2. Find all processes spawned by wsync.exe (attacker beacon)
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where InitiatingProcessFileName == "wsync.exe"
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 3. Network scanner execution detection
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName =~ "scan.exe"
+| project Timestamp, DeviceName, AccountName, FileName, FolderPath, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 4. Process enumeration commands (pre-credential theft recon)
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("tasklist", "Get-Process", "qprocess", "wmic process")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 5. Find bitsadmin LOLBIN abuse
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "bitsadmin.exe"
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 6. Detect security services being stopped
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "net.exe"
+| where ProcessCommandLine has_any ("stop WinDefend", "stop WdNisSvc",
+    "stop SecurityHealthService", "stop Sense", "stop VSS", "stop wbengine")
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 7. Detect shadow copy / backup deletion commands
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where ProcessCommandLine has_any ("vssadmin", "shadowcopy", "wbadmin", "bcdedit")
+| where ProcessCommandLine has_any ("delete", "off", "No", "recoveryenabled")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 8. Find suspicious executables in C:\ProgramData or C:\Users\Public
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FolderPath has_any ("ProgramData", "Users\\Public")
+| where FileName endswith ".exe"
+| where not(FileName has_any ("MsMpEng", "NisSrv", "svchost"))
+| project Timestamp, DeviceName, AccountName, FileName, FolderPath, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 9. Find PowerShell running from remote execution context
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName == "powershell.exe"
+| where InitiatingProcessFileName in ("wsync.exe", "RuntimeBroker.exe")
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 10. Detect ransomware masquerading as updater.exe
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where FileName =~ "updater.exe"
+| where FolderPath has "ProgramData"
+| project Timestamp, DeviceName, AccountName, FolderPath, ProcessCommandLine
+| sort by Timestamp asc
+
+// ----------------------------------------------------------
+// 11. Full attack activity on a host — timeline view
+// ----------------------------------------------------------
+DeviceProcessEvents
+| where DeviceName == "as-pc2"
+| where Timestamp between (datetime(2026-01-27T19:00:00) .. datetime(2026-01-27T22:30:00))
+| where InitiatingProcessFileName in ("wsync.exe", "cmd.exe", "powershell.exe")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName
+| sort by Timestamp asc
