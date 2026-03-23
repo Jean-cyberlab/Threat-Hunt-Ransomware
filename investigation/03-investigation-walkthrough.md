@@ -460,3 +460,11 @@ Individual PowerShell cmdlet executions aren't always visible in `DeviceProcessE
 
 **5. Parent process context is everything**
 The `InitiatingProcessCommandLine` and `InitiatingProcessFileName` columns repeatedly provided the missing link — connecting malicious commands back to the script or tool that called them.
+
+---
+
+## Recommendations Summary
+
+1. **Immediate:** Isolate and reimage `as-pc2` and `as-srv`, reset all compromised credentials, block all IOC domains and IPs
+2. **Short-term:** Enable Defender Tamper Protection, deploy Credential Guard, restrict execution from `C:\Users\Public` and `C:\ProgramData`
+3. **Long-term:** Implement MFA for all remote access, deploy immutable offline backups, conduct regular threat hunts for pre-staged access tools
