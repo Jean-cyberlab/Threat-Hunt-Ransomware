@@ -117,7 +117,7 @@ A ransomware affiliate re-entered the environment using **pre-staged AnyDesk** a
 
 - [Executive Summary](investigation/01-executive-summary.md)
 - [Attack Timeline](investigation/02-attack-timeline.md)
-- [Full Investigation Walkthrough](investigation/03-flags-walkthrough.md)
+- [Full Investigation Walkthrough](https://github.com/Jean-cyberlab/Threat-Hunt-Ransomware/blob/main/investigation/03-investigation-walkthrough.md)
 - [MITRE ATT&CK Mapping](investigation/04-mitre-mapping.md)
 - [KQL Query Library](kql-queries/README.md)
 - [IOC Reference](iocs/README.md)
