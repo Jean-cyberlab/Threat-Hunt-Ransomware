@@ -99,5 +99,3 @@ All timestamps are in **UTC**. The full attack from initial re-entry to encrypti
 | 22:20 | as-srv | as.srv.administrator | `clean.bat` deletes `updater.exe` | T1070 |
 | 22:20 | as-srv | as.srv.administrator | `ConsoleHost_history.txt` deleted | T1070 |
 
----
-
