@@ -13,11 +13,11 @@ My investigation began at the point of impact. The file server `as-srv` had been
 
 The ransom note contained a TOR address for victim negotiations and a unique victim ID. When I attempted to verify the TOR address, I ran into a common problem — the font used in the note made several characters visually ambiguous, with lowercase `l` characters easily mistaken for the number `1`. I cross-referenced the address against [ransomware.live](https://www.ransomware.live), a public threat intelligence resource that tracks ransomware group infrastructure, to confirm the correct address. Three positions in the address had been misread — `akira[l]2`, `ayp3[l]6`, and `ko[ll]pj` were all lowercase L, not the number one.
 
-![File server encrypted files](images/image1.png)
+![File server encrypted files](../images/image1.png)
 
-![Ransom note content](images/image2.png)
+![Ransom note content](../images/image2.png)
 
-![Encrypted files view](images/image3.png)
+![Encrypted files view](../images/image3.png)
 
 My first KQL query was simple — find the ransom note to confirm the file server hostname and establish the exact time encryption began:
 
@@ -28,7 +28,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Ransom note timestamps](images/image5.png)
+![Ransom note timestamps](../images/image5.png)
 
 The first ransom note was dropped at **22:18:33 UTC** on 27 January 2026. This became my primary timestamp anchor — everything I investigated from this point was working backwards from this moment.
 
@@ -49,9 +49,9 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![AnyDesk execution path 1](images/image19.png)
+![AnyDesk execution path 1](../images/image19.png)
 
-![AnyDesk execution path 2](images/image20.png)
+![AnyDesk execution path 2](../images/image20.png)
 
 This was a significant finding. Legitimate AnyDesk installations live in `C:\Program Files (x86)\AnyDesk\`. This instance was running from `C:\Users\Public` — a world-writable directory accessible to any user without elevated privileges, hidden from default Windows Explorer views. This confirmed AnyDesk had been manually dropped here rather than installed — it was pre-staged during a prior compromise and left as a persistent backdoor.
 
@@ -67,7 +67,7 @@ DeviceNetworkEvents
 | sort by Timestamp asc
 ```
 
-![Attacker IP evidence](images/image21.png)
+![Attacker IP evidence](../images/image21.png)
 
 Three connections on port 7070 all came from the same external IP — **88.97.164.155**. This is the attacker's real IP address. I also found the relay domain being used when direct connections weren't possible:
 
@@ -80,7 +80,7 @@ DeviceNetworkEvents
 | sort by Timestamp asc
 ```
 
-![AnyDesk relay domain evidence](images/image7.png)
+![AnyDesk relay domain evidence](../images/image7.png)
 
 The attacker was back inside the network via a backdoor they had left from a previous intrusion — no new exploitation required.
 
@@ -101,7 +101,7 @@ DeviceNetworkEvents
 | sort by Timestamp asc
 ```
 
-![Payload domain evidence](images/image4.png)
+![Payload domain evidence](../images/image4.png)
 
 The domain `sync.cloud-endpoint.net` appeared as the source of the tool downloads. The name was deliberately chosen to blend in with legitimate cloud traffic. It resolved to two different IPs — `104.21.30.237` and `172.67.174.46` — both belonging to Cloudflare's CDN. Hosting malicious content behind a CDN makes IP-based blocking ineffective and the traffic appear more legitimate to network monitoring tools.
 
@@ -116,9 +116,9 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![bitsadmin download attempts](images/image29.png)
+![bitsadmin download attempts](../images/image29.png)
 
-![bitsadmin evidence 2](images/image30.png)
+![bitsadmin evidence 2](../images/image30.png)
 
 The same download was attempted multiple times to different paths — `C:\Users\Public\`, `C:\Temp\`, and `C:\Users\david.mitchell\Downloads\` — suggesting permission or path issues. After these failures, the attacker switched to PowerShell's `Invoke-WebRequest` cmdlet. I found this by querying `DeviceEvents` for `PowerShellCommand` action types — individual cmdlet executions are captured here even when not visible in `DeviceProcessEvents`:
 
@@ -131,7 +131,7 @@ DeviceEvents
 | sort by TimeGenerated asc
 ```
 
-![Invoke-WebRequest evidence](images/image31.png)
+![Invoke-WebRequest evidence](../images/image31.png)
 
 Two tools were downloaded — `wsync.exe` (the C2 beacon) and `scan.exe` (a network scanner). Both were staged in `C:\ProgramData\`.
 
@@ -145,9 +145,9 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![wsync.exe first hash](images/image23.png)
+![wsync.exe first hash](../images/image23.png)
 
-![wsync.exe second hash](images/image24.png)
+![wsync.exe second hash](../images/image24.png)
 
 The MDE process tree also flagged `scan.exe` as AdvancedIpScanner — a legitimate network administration tool that had been renamed to disguise its identity. I retrieved its hash and confirmed the exact arguments used when it was executed. Finding the arguments required careful attention to the UTC time window — my initial queries failed because I was using local time:
 
@@ -160,7 +160,7 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Scanner arguments evidence](images/image27.png)
+![Scanner arguments evidence](../images/image27.png)
 
 The `/portable` flag meant no installation artefacts were left. Output was directed to `C:\Users\david.mitchell\Downloads\` — meaning the scan results were saved locally for the attacker to review through their AnyDesk session.
 
@@ -179,9 +179,9 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Evasion script evidence 1](images/image8.png)
+![Evasion script evidence 1](../images/image8.png)
 
-![Evasion script evidence 2](images/image9.png)
+![Evasion script evidence 2](../images/image9.png)
 
 The `InitiatingProcessCommandLine` field showed `cmd.exe /c C:\ProgramData\kill.bat` as the parent for all the disabling commands — this identified the script file. Inside it, `kill.bat` ran several commands to blind the defences:
 
@@ -200,9 +200,9 @@ DeviceRegistryEvents
 | sort by Timestamp asc
 ```
 
-![Registry tampering evidence 1](images/image12.png)
+![Registry tampering evidence 1](../images/image12.png)
 
-![Registry tampering evidence 2](images/image13.png)
+![Registry tampering evidence 2](../images/image13.png)
 
 The `DisableAntiSpyware` value was set to `1` under `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender` at **21:03:42 UTC**. Unlike stopping a service, this registry change persists across reboots — Defender would remain disabled even after a restart until the key was manually removed.
 
@@ -220,7 +220,7 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Process hunt evidence](images/image14.png)
+![Process hunt evidence](../images/image14.png)
 
 The command `tasklist | findstr lsass` was run twice — at 21:11 and 21:14 UTC — both initiated by `wsync.exe`. Running it twice suggested the attacker was being methodical, confirming LSASS was running before proceeding.
 
@@ -237,11 +237,11 @@ DeviceEvents
 | sort by Timestamp asc
 ```
 
-![Named pipe evidence 1](images/image15.png)
+![Named pipe evidence 1](../images/image15.png)
 
-![Named pipe evidence 2](images/image16.png)
+![Named pipe evidence 2](../images/image16.png)
 
-![Named pipe evidence 3](images/image17.png)
+![Named pipe evidence 3](../images/image17.png)
 
 The named pipe `\Device\NamedPipe\lsass` was accessed — a direct channel to LSASS process memory. This extracted credential hashes for every logged-in account on the machine, including the `as.srv.administrator` local admin account that would be used moments later for lateral movement.
 
@@ -264,7 +264,7 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Network enumeration evidence](images/image28.png)
+![Network enumeration evidence](../images/image28.png)
 
 The commands `net view \\10.1.0.154` and `net view \\10.1.0.183` were executed at 22:17 UTC — 60 seconds before encryption started. The attacker was checking whether these hosts had accessible shares worth targeting. Having admin credentials on the file server gave full control over the environment's most sensitive data.
 
@@ -285,7 +285,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Staging tool and archive evidence](images/image32.png)
+![Staging tool and archive evidence](../images/image32.png)
 
 A tool called `st.exe` created `exfil_data.zip` at `C:\Users\Public\` on the file server. The naming was explicit — there was no attempt to disguise the archive's purpose. I retrieved its hash to add to the IOC list:
 
@@ -296,7 +296,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![st.exe hash evidence](images/image33.png)
+![st.exe hash evidence](../images/image33.png)
 
 The archive was placed in `C:\Users\Public\` — the same world-writable directory the attacker had been using throughout. This location was accessible via the AnyDesk session, making exfiltration straightforward without needing additional tools.
 
@@ -314,7 +314,7 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Ransomware filename evidence](images/image34.png)
+![Ransomware filename evidence](../images/image34.png)
 
 The ransomware binary was named `updater.exe` and was executed from `C:\ProgramData\` — disguised as a Windows update process to avoid suspicion in process lists. I retrieved its hash:
 
@@ -326,7 +326,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Ransomware hash evidence](images/image35.png)
+![Ransomware hash evidence](../images/image35.png)
 
 I also confirmed what process had dropped `updater.exe` onto the server — the `InitiatingProcessFileName` column in `DeviceFileEvents` answered this:
 
@@ -338,7 +338,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Ransomware staging evidence](images/image36.png)
+![Ransomware staging evidence](../images/image36.png)
 
 Before triggering encryption, the attacker deleted Volume Shadow Copies to eliminate recovery options. I found the commands by searching for "delete" in process command lines:
 
@@ -351,7 +351,7 @@ DeviceProcessEvents
 | sort by Timestamp asc
 ```
 
-![Shadow copy deletion evidence](images/image37.png)
+![Shadow copy deletion evidence](../images/image37.png)
 
 The full set of recovery-prevention commands included:
 - `vssadmin delete shadows /all /quiet` — silently deleted all shadow copies
@@ -369,7 +369,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Ransom note origin evidence](images/image38.png)
+![Ransom note origin evidence](../images/image38.png)
 
 Notes were dropped in the administrator's Desktop, Downloads, and Documents folders — ensuring immediate visibility upon login.
 
@@ -388,7 +388,7 @@ DeviceFileEvents
 | sort by Timestamp asc
 ```
 
-![Cleanup script evidence](images/image39.png)
+![Cleanup script evidence](../images/image39.png)
 
 The script `clean.bat` deleted two items:
 
