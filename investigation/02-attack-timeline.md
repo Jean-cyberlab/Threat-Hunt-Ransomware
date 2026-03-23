@@ -101,16 +101,3 @@ All timestamps are in **UTC**. The full attack from initial re-entry to encrypti
 
 ---
 
-## Dwell Time Analysis
-
-| Phase | Start | End | Duration |
-|---|---|---|---|
-| Initial Access | 19:15 | 19:17 | ~2 minutes |
-| Tool Deployment | 19:17 | 19:22 | ~5 minutes |
-| Reconnaissance | 19:17 | 19:45 | ~28 minutes |
-| Defense Evasion | 20:03 | 21:03 | ~60 minutes |
-| Credential Theft | 21:11 | 21:14 | ~3 minutes |
-| Lateral Movement | 22:17 | 22:17 | ~1 minute |
-| Data Exfiltration | 22:17 | 22:18 | ~1 minute |
-| Ransomware Deployment | 22:18 | 22:20 | ~2 minutes |
-| **Total Dwell Time** | **19:15** | **22:20** | **~3 hours 5 minutes** |
